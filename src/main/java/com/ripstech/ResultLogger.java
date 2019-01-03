@@ -49,6 +49,7 @@ class ResultLogger {
 			                          issueFile,
 			                          startLine));
 		}
+		System.out.println();
 	}
 
 	void printThresholdStats(Map<Severity, Integer> reachedThresholds, String uiUrl, long applicationId, long scanId) throws MojoFailureException {

@@ -23,6 +23,8 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.file.Paths;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -55,10 +57,10 @@ public class RipsScanMojo extends AbstractMojo {
   @Parameter(property = "rips.applicationId", required = true)
   private int applicationId;
 
-  @Parameter(property = "rips.profileId", required = true)
+  @Parameter(property = "rips.profileId", defaultValue = "1")
   private long profileId;
 
-  @Parameter(property = "rips.version", required = true)
+  @Parameter(property = "rips.version")
   private String version;
 
   @Parameter(property = "rips.thresholds")
@@ -99,6 +101,11 @@ public class RipsScanMojo extends AbstractMojo {
 
       long uploadId = ApiUtils.uploadFile(api, archiver.getArchive(), applicationId);
       logger.debug("Upload ID: " + uploadId);
+
+      if(null == version) {
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
+        version = LocalDateTime.now().format(formatter) + "-" + project.getName();
+      }
 
       // Start scan
       long scanId = ApiUtils.startScan(api, applicationId, profileId, uploadId, version);
