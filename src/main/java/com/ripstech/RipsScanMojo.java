@@ -32,7 +32,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
-@Mojo(name = "rips",
+@Mojo(name = "scan",
         defaultPhase = LifecyclePhase.VERIFY,
         inheritByDefault = false)
 public class RipsScanMojo extends AbstractMojo {
@@ -78,9 +78,6 @@ public class RipsScanMojo extends AbstractMojo {
   @Override
   public void execute() throws MojoExecutionException, MojoFailureException {
 
-    // Initialize thresholds not set by user.
-    initThresholds();
-
     // Ignore sub modules
     if(!project.isExecutionRoot()) {
       return;
@@ -104,7 +101,7 @@ public class RipsScanMojo extends AbstractMojo {
 
       if(null == version) {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
-        version = LocalDateTime.now().format(formatter) + "-" + project.getName();
+        version = LocalDateTime.now().format(formatter);
       }
 
       // Start scan
@@ -182,13 +179,6 @@ public class RipsScanMojo extends AbstractMojo {
     }
     logger.debug("Created zip");
 
-  }
-
-  private void initThresholds() {
-    thresholds.putIfAbsent("critical", 0);
-    thresholds.putIfAbsent("high", 0);
-    thresholds.putIfAbsent("medium", 0);
-    thresholds.putIfAbsent("low", 0);
   }
 }
 
