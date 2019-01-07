@@ -97,7 +97,7 @@ public class RipsScanMojo extends AbstractMojo {
       zipSources(archiver);
 
       long uploadId = ApiUtils.uploadFile(api, archiver.getArchive(), applicationId);
-      logger.debug("Upload ID: " + uploadId);
+      logger.info("Upload ID: " + uploadId);
 
       if(null == version) {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
@@ -106,7 +106,7 @@ public class RipsScanMojo extends AbstractMojo {
 
       // Start scan
       long scanId = ApiUtils.startScan(api, applicationId, profileId, uploadId, version);
-      logger.debug("Scan ID: " + scanId);
+      logger.info("Scan ID: " + scanId);
 
       archiver.removeZipFile();
 

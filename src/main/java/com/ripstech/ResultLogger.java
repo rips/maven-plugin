@@ -43,28 +43,30 @@ class ResultLogger {
 
 			}
 			if(null != issue.getSink()) {
-				System.out.println(String.format("\n%s:", issueTypeNames.get(issue.getType().getId())));
+				logger.info("");
+				logger.info(String.format("%s:", issueTypeNames.get(issue.getType().getId())));
 			}
-			System.out.println(String.format("%s:%d",
+			logger.info(String.format("%s:%d",
 			                          issueFile,
 			                          startLine));
 		}
-		System.out.println();
+		logger.info("");
 	}
 
 	void printThresholdStats(Map<Severity, Integer> reachedThresholds, String uiUrl, long applicationId, long scanId) throws MojoFailureException {
 		if (!reachedThresholds.isEmpty()) {
-			logger.error("The following thresholds have been exceeded:");
+			logger.info("The following thresholds have been exceeded:");
 			reachedThresholds.forEach((key, value) ->
-					                          logger.error(
+					                          logger.info(
 					                          		String.format("Severity: %s, Number of Issues: %d",
 						                                          key, value)));
 
 
-			logger.error("Detailed view: " + uiUrl + "/scan/" + applicationId + "/" + scanId);
+			logger.info("Detailed view: " + uiUrl + "/scan/" + applicationId + "/" + scanId);
 			throw new MojoFailureException("Thresholds have been exceeded.");
 
 		}
+		logger.info("Detailed view: " + uiUrl + "/scan/" + applicationId + "/" + scanId);
 	}
 
 	void printThresholdStats(Map<Severity, Integer> reachedThresholds) throws MojoFailureException {
