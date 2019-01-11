@@ -50,7 +50,7 @@ You can add and configure the plugin in your pom.xml:
 </build>
 ```
 
-### Details
+## Details
 
 - rips.apiUrl(required): Your RIPS Api Url.
 - rips.uiUrl(optional): Your RIPS Ui Url.
