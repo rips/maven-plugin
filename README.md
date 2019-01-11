@@ -3,7 +3,7 @@
 Apache Maven is a popular build management tool for Java applications. RIPS security analysis can be easily added as a build task in order to fail your build whenever new security vulnerabilities are added.
 
 ## Setup
-Add the plugin to your local repository
+Add the plugin to your local repository:
 
 ```shell
 mvn install:install-file -Dfile=<path-to-jar> -DgroupId=com.ripstech \
@@ -25,7 +25,7 @@ You can add and configure the plugin in your pom.xml:
 				<uiUrl>https://saas.ripstech.com</uiUrl>
 				<email>test@company</email>
 				<password>yourPassword</password>
-				<applicationId>yourApplicationId<applicationId>
+				<applicationId>yourApplicationId</applicationId>
 				<profileId>yourProfileId</profileId>
 				<version>yourScanVersion</version>
 				<thresholds>
