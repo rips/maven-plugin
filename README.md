@@ -2,6 +2,14 @@
 
 Apache Maven is a popular build management tool for Java applications. RIPS security analysis can be easily added as a build task in order to fail your build whenever new security vulnerabilities are added.
 
+## Setup
+Add the plugin to your local repository
+
+```shell
+mvn install:install-file -Dfile=<path-to-jar> -DgroupId=com.ripstech \
+-DartifactId=rips-maven-plugin -Dversion=1.0.0 -Dpackaging=jar
+```
+
 ## Configuration
 
 You can add and configure the plugin in your pom.xml:
@@ -33,11 +41,11 @@ You can add and configure the plugin in your pom.xml:
 		</plugin>
 	</plugins>
 	<executions>
-	<execution>
-		<goals>
-			<goal>scan</goal>
-		</goals>
-		</execution>
+		<execution>
+			<goals>
+				<goal>scan</goal>
+			</goals>
+			</execution>
 	</executions>
 </build>
 ```
@@ -56,7 +64,7 @@ You can add and configure the plugin in your pom.xml:
 - rips.scanTimeout(optional): Overwrite default scan timeout (5) in hours.
 - rips.printIssues(optional): Set to false to suppress detailed output of all issues.
 
-### Setting the build phase
+## Setting the build phase
 The plugins' default build phase is 'verfiy' which means it scans during integration tests.
 You can change this using the ```<executions>``` tag. For instance if you want to set it to 'deploy':
 
