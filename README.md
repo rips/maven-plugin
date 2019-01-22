@@ -39,14 +39,14 @@ You can add and configure the plugin in your pom.xml:
 				<printIssues>true</printIssues>
 			</configuration>
 		</plugin>
+		<executions>
+			<execution>
+				<goals>
+					<goal>scan</goal>
+				</goals>
+				</execution>
+		</executions>
 	</plugins>
-	<executions>
-		<execution>
-			<goals>
-				<goal>scan</goal>
-			</goals>
-			</execution>
-	</executions>
 </build>
 ```
 
