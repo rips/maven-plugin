@@ -33,12 +33,12 @@
         <dependency>
             <groupId>com.ripstech.api</groupId>
             <artifactId>connector</artifactId>
-            <version>3.0.0</version>
+            <version>3.0.0-20190124.151238-6</version>
         </dependency>
         <dependency>
             <groupId>com.ripstech.api</groupId>
             <artifactId>utils</artifactId>
-            <version>3.0.0</version>
+            <version>3.0.0-20190124.151249-6</version>
         </dependency>
         <dependency>
             <groupId>org.jetbrains</groupId>

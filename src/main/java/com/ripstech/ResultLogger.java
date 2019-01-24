@@ -26,13 +26,9 @@ class ResultLogger {
 		for(Issue issue : issues) {
 			Path issueFile = null;
 			Integer startLine = null;
-			if(null != issue.getSource()) {
-				issueFile = Paths.get(issueFiles.get(issue.getSource().getFile().getId())).toAbsolutePath();
-				startLine = issue.getSource().getStartLine();
-			} else if (null != issue.getSink()) {
+			if (null != issue.getSink()) {
 				issueFile = Paths.get(issueFiles.get(issue.getSink().getFile().getId())).toAbsolutePath();
 				startLine = issue.getSink().getStartLine();
-
 			}
 			if(null != issue.getSink()) {
 				logger.info("");

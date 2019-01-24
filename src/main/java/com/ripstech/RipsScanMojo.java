@@ -72,16 +72,18 @@ public class RipsScanMojo extends AbstractMojo {
   @Parameter(property = "rips.printIssues", defaultValue = "true")
   private boolean printIssues;
 
+  private static final String SCAN_SOURCE = "ci-build-maven";
+
   @Override
   public void execute() throws MojoExecutionException, MojoFailureException {
-    Log logger;
+
     // Ignore sub modules
     if(!project.isExecutionRoot()) {
       return;
     }
 
     // Get Logger
-    logger = getLog();
+    final Log logger = getLog();
     ResultLogger resultLogger = new ResultLogger(logger);
     Api api;
 
@@ -90,10 +92,10 @@ public class RipsScanMojo extends AbstractMojo {
 
       ScanHandler scanHandler = new ScanHandler(api, applicationId, uiUrl);
 
-      scanHandler.uploadFile(Paths.get("."));
+      scanHandler.uploadFile(Paths.get("."), SCAN_SOURCE);
       long scanId = scanHandler.setLogger(logger::info).startScan(new ScanVersionPattern("Maven")
                                           .replace(ScanVersionPattern.ISO_DATE_TIME),
-                                          config -> config.setSource("ci-build-maven"))
+                                          config -> config.setSource(SCAN_SOURCE))
                             .getId();
 
       IssueHandler issueHandler = scanHandler.getIssueHandler();
