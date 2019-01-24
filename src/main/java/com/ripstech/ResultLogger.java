@@ -1,7 +1,7 @@
 package com.ripstech;
 
 import com.ripstech.api.entity.receive.application.scan.Issue;
-import com.ripstech.api.utils.Severity;
+import com.ripstech.api.utils.scan.result.ThresholdViolations;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugin.logging.Log;
 
@@ -17,16 +17,8 @@ class ResultLogger {
 		this.logger = logger;
 	}
 
-	void printNumberOfIssues(Map<String, Integer> totalIssues, Map<String, Integer> newIssues) {
-		logger.info( String.format("%d issues have been found. %d are new issues.",
-		                           totalIssues.values()
-				                           .stream()
-				                           .mapToInt(i -> i)
-				                           .sum(),
-		                           newIssues.values()
-				                           .stream()
-				                           .mapToInt(i -> i)
-				                           .sum()));
+	void printNumberOfIssues(int totalIssues, int newIssues) {
+		logger.info( String.format("%d issues have been found. %d are new issues.", totalIssues, newIssues));
 	}
 
 	void printIssues(Map<Long, String> issueFiles, Map<Long, String> issueTypeNames, List<Issue> issues) {
@@ -53,29 +45,14 @@ class ResultLogger {
 		logger.info("");
 	}
 
-	void printThresholdStats(Map<Severity, Integer> reachedThresholds, String uiUrl, long applicationId, long scanId) throws MojoFailureException {
-		if (!reachedThresholds.isEmpty()) {
+
+	void printThresholdStats(ThresholdViolations thresholdViolations) throws MojoFailureException {
+		if (thresholdViolations.isFailed()) {
 			logger.info("The following thresholds have been exceeded:");
-			reachedThresholds.forEach((key, value) ->
-					                          logger.info(
-					                          		String.format("Severity: %s, Number of Issues: %d",
-						                                          key, value)));
-
-
-			logger.info("Detailed view: " + uiUrl + "/scan/" + applicationId + "/" + scanId);
-			throw new MojoFailureException("Thresholds have been exceeded.");
-
-		}
-		logger.info("Detailed view: " + uiUrl + "/scan/" + applicationId + "/" + scanId);
-	}
-
-	void printThresholdStats(Map<Severity, Integer> reachedThresholds) throws MojoFailureException {
-		if (!reachedThresholds.isEmpty()) {
-			logger.error("The following thresholds have been exceeded:");
-			reachedThresholds.forEach((key, value) ->
+			thresholdViolations.getEntries().forEach((key, value) ->
 					                          logger.error(
 							                          String.format("Severity: %s, Number of Issues: %d",
-							                                        key, value)));
+							                                        key, value.getIssues())));
 
 
 			throw new MojoFailureException("Thresholds have been exceeded.");

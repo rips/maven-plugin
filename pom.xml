@@ -31,19 +31,14 @@
             <version>3.3.3</version>
         </dependency>
         <dependency>
-            <groupId>com.ripstech</groupId>
-            <artifactId>api-connector-java2</artifactId>
-            <version>3.0.0-20181217.114911-5</version>
+            <groupId>com.ripstech.api</groupId>
+            <artifactId>connector</artifactId>
+            <version>3.0.0</version>
         </dependency>
         <dependency>
             <groupId>com.ripstech.api</groupId>
-            <artifactId>entity</artifactId>
-            <version>1.0-20181219.133835-23</version>
-        </dependency>
-        <dependency>
-            <groupId>com.ripstech.api.utils</groupId>
-            <artifactId>common-lib</artifactId>
-            <version>0.1</version>
+            <artifactId>utils</artifactId>
+            <version>3.0.0</version>
         </dependency>
         <dependency>
             <groupId>org.jetbrains</groupId>
