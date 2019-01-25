@@ -18,7 +18,7 @@ class ResultLogger {
 	}
 
 	void printNumberOfIssues(int totalIssues, int newIssues) {
-		logger.info( String.format("%d issues have been found. %d are new issues.", totalIssues, newIssues));
+		logger.warn( String.format("%d issues have been found. %d are new issues.", totalIssues, newIssues));
 	}
 
 	void printIssues(Map<Long, String> issueFiles, Map<Long, String> issueTypeNames, List<Issue> issues, String uiUrl,
@@ -31,14 +31,14 @@ class ResultLogger {
 				Integer startLine = issue.getSink().getStartLine();
 				Integer startColumn = issue.getSink().getStartColumn();
 
-				logger.info("");
-				logger.info(String.format("%s:", issueTypeNames.get(issue.getType().getId())));
+				logger.warn("");
+				logger.warn(String.format("%s:", issueTypeNames.get(issue.getType().getId())));
 
-				logger.info(String.format("%s:[%d,%d]",
+				logger.warn(String.format("%s:[%d,%d]",
 				                          issueFile,
 				                          startLine,
 				                          startColumn));
-				logger.info(String.format("More information: %s/issue/%d/%d/%d/%d/details",
+				logger.warn(String.format("More information: %s/issue/%d/%d/%d/%d/details",
 				                          uiUrl, appId, scanId, issue.getType().getId(), issue.getId()));
 			}
 		}
@@ -50,7 +50,7 @@ class ResultLogger {
 		if (thresholdViolations.isFailed()) {
 			logger.info("The following thresholds have been exceeded:");
 			thresholdViolations.getEntries().forEach((key, value) ->
-					                          logger.error(
+					                          logger.warn(
 							                          String.format("Severity: %s, Number of Issues: %d",
 							                                        key, value.getIssues())));
 
