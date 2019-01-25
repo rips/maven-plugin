@@ -58,7 +58,7 @@ public class RipsScanMojo extends AbstractMojo {
   @Parameter(property = "rips.profileId")
   private long profileId;
 
-  @Parameter(property = "rips.version")
+  @Parameter(property = "rips.version", defaultValue = RipsDefault.VERSION_PATTERN)
   private String version;
 
   @Parameter(property = "rips.thresholds")
@@ -108,8 +108,7 @@ public class RipsScanMojo extends AbstractMojo {
       ScanHandler scanHandler = new ScanHandler(api, applicationId, uiUrl);
 
       scanHandler.uploadFile(Paths.get("."), SCAN_SOURCE);
-      long scanId = scanHandler.setLogger(logger::info).startScan(new ScanVersionPattern("Maven")
-                                          .replace(ScanVersionPattern.ISO_DATE_TIME),
+      long scanId = scanHandler.setLogger(logger::info).startScan(resolveScanVersion(version),
                                           config -> config.setSource(SCAN_SOURCE)
                                                           .setProfile(profileId)
                                                           .setAnalysisDepth(analysisDepth))
@@ -163,6 +162,16 @@ public class RipsScanMojo extends AbstractMojo {
     }
 
     return api;
+  }
+
+  private String resolveScanVersion(String scanVersion) {
+    return new ScanVersionPattern("Maven",
+                                  null,
+                                  project.getName(),
+                                  null,
+                                  null,
+                                  null)
+                   .replace(scanVersion);
   }
 }
 
