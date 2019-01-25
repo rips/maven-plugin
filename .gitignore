@@ -5,3 +5,4 @@
 **/.gradle/
 **/LanguageUtils/src/main/resources/
 .attach_pid*
+.directory
