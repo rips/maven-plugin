@@ -21,22 +21,26 @@ class ResultLogger {
 		logger.info( String.format("%d issues have been found. %d are new issues.", totalIssues, newIssues));
 	}
 
-	void printIssues(Map<Long, String> issueFiles, Map<Long, String> issueTypeNames, List<Issue> issues) {
+	void printIssues(Map<Long, String> issueFiles, Map<Long, String> issueTypeNames, List<Issue> issues, String uiUrl,
+	                 long appId, long scanId) {
 
 		for(Issue issue : issues) {
-			Path issueFile = null;
-			Integer startLine = null;
+
 			if (null != issue.getSink()) {
-				issueFile = Paths.get(issueFiles.get(issue.getSink().getFile().getId())).toAbsolutePath();
-				startLine = issue.getSink().getStartLine();
-			}
-			if(null != issue.getSink()) {
+				Path issueFile = Paths.get(issueFiles.get(issue.getSink().getFile().getId())).toAbsolutePath();
+				Integer startLine = issue.getSink().getStartLine();
+				Integer startColumn = issue.getSink().getStartColumn();
+
 				logger.info("");
 				logger.info(String.format("%s:", issueTypeNames.get(issue.getType().getId())));
+
+				logger.info(String.format("%s:[%d,%d]",
+				                          issueFile,
+				                          startLine,
+				                          startColumn));
+				logger.info(String.format("More information: %s/issue/%d/%d/%d/%d/details",
+				                          uiUrl, appId, scanId, issue.getType().getId(), issue.getId()));
 			}
-			logger.info(String.format("%s:%d",
-			                          issueFile,
-			                          startLine));
 		}
 		logger.info("");
 	}

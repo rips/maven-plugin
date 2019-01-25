@@ -4,6 +4,7 @@ import com.ripstech.api.connector.Api;
 import com.ripstech.api.connector.exception.ApiException;
 import com.ripstech.api.entity.receive.application.scan.Issue;
 import com.ripstech.api.utils.*;
+import com.ripstech.api.utils.constant.RipsDefault;
 import com.ripstech.api.utils.constant.Severity;
 import com.ripstech.api.utils.issue.IssueHandler;
 import com.ripstech.api.utils.scan.ScanHandler;
@@ -54,14 +55,14 @@ public class RipsScanMojo extends AbstractMojo {
   @Parameter(property = "rips.applicationId", required = true)
   private int applicationId;
 
-  @Parameter(property = "rips.profileId", defaultValue = "1")
+  @Parameter(property = "rips.profileId")
   private long profileId;
 
   @Parameter(property = "rips.version")
   private String version;
 
   @Parameter(property = "rips.thresholds")
-  private Map<String, Integer> thresholds;
+  private Map<String, Integer> thresholds = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
 
   @Parameter(property = "rips.analysisDepth", defaultValue = "5")
   private int analysisDepth;
@@ -74,8 +75,22 @@ public class RipsScanMojo extends AbstractMojo {
 
   private static final String SCAN_SOURCE = "ci-build-maven";
 
+
   @Override
   public void execute() throws MojoExecutionException, MojoFailureException {
+
+    // Filter invalid thresholds and create new map with severities
+    Map<Severity, Integer> severities = thresholds.entrySet()
+                         .stream()
+                         .filter(entry ->
+                                         Arrays.stream(Severity.values())
+                                                 .anyMatch(severity ->
+                                                                   entry.getKey()
+                                                                           .toUpperCase()
+                                                                           .equals(severity.toString())))
+                         .collect(Collectors.toMap(entry ->
+                                                           Severity.valueOf(entry.getKey().toUpperCase()),
+                                                   Map.Entry::getValue));
 
     // Ignore sub modules
     if(!project.isExecutionRoot()) {
@@ -95,17 +110,18 @@ public class RipsScanMojo extends AbstractMojo {
       scanHandler.uploadFile(Paths.get("."), SCAN_SOURCE);
       long scanId = scanHandler.setLogger(logger::info).startScan(new ScanVersionPattern("Maven")
                                           .replace(ScanVersionPattern.ISO_DATE_TIME),
-                                          config -> config.setSource(SCAN_SOURCE))
-                            .getId();
+                                          config -> config.setSource(SCAN_SOURCE)
+                                                          .setProfile(profileId)
+                                                          .setAnalysisDepth(analysisDepth))
+                                                          .getId();
 
       IssueHandler issueHandler = scanHandler.getIssueHandler();
+      issueHandler.setTimeoutInMinutes(scanTimeout * 60);
+      issueHandler.setPollIntervalInSeconds(5);
       List<Issue> issues = issueHandler.getAllIssues();
 
-      Map<Severity, Integer> thresholdsSeverity = thresholds.entrySet().stream()
-                                                          .collect(Collectors.toMap(entry -> Severity.valueOf(entry.getKey().toUpperCase()),
-                                                                                    Map.Entry::getValue));
 
-      ThresholdViolations thresholdViolations = ScanResultParser.getReachedThreshold(new Thresholds(thresholdsSeverity),
+      ThresholdViolations thresholdViolations = ScanResultParser.getReachedThreshold(new Thresholds(severities),
                                                                                      issueHandler.getScanResult());
 
       resultLogger.printNumberOfIssues(issues.size(),
@@ -115,7 +131,7 @@ public class RipsScanMojo extends AbstractMojo {
         Map<Long, String> issueFiles = ScanResultParser.getFilesFromIssues(api, applicationId, scanId);
         Map<Long, String> issueTypeNames = ApiUtils.getIssueTypeNames(api);
 
-        resultLogger.printIssues(issueFiles, issueTypeNames, issues);
+        resultLogger.printIssues(issueFiles, issueTypeNames, issues, uiUrl, applicationId, scanId);
       }
       resultLogger.printThresholdStats(thresholdViolations);
 
