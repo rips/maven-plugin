@@ -1,6 +1,5 @@
 # Rips Maven Plugin
 
-
 ## Configuration
 - rips.apiUrl(required): Your RIPS Api Url.
 - rips.uiUrl(optional): Your RIPS Ui Url.
