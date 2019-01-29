@@ -62,7 +62,7 @@ public class RipsScanMojo extends AbstractMojo {
 	private String version;
 
 	@Parameter(property = "rips.thresholds")
-	private Map<String, Integer> thresholds = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+	private Map<String, Integer> thresholds;
 
 	@Parameter(property = "rips.analysisDepth", defaultValue = "5")
 	private int analysisDepth;
@@ -75,9 +75,13 @@ public class RipsScanMojo extends AbstractMojo {
 
 	private static final String SCAN_SOURCE = "ci-build-maven";
 
-
 	@Override
 	public void execute() throws MojoExecutionException, MojoFailureException {
+
+		// Ignore sub modules
+		if (!project.isExecutionRoot()) {
+			return;
+		}
 
 		// Filter invalid thresholds and create new map with severities
 		Map<Severity, Integer> severities =
@@ -89,11 +93,6 @@ public class RipsScanMojo extends AbstractMojo {
 												                              .equals(severity.toString())))
 						.collect(Collectors.toMap(entry -> Severity.valueOf(entry.getKey().toUpperCase()),
 						                          Map.Entry::getValue));
-
-		// Ignore sub modules
-		if (!project.isExecutionRoot()) {
-			return;
-		}
 
 		// Get Logger
 		final Log logger = getLog();
@@ -118,7 +117,6 @@ public class RipsScanMojo extends AbstractMojo {
 			issueHandler.setPollIntervalInSeconds(5);
 			List<Issue> issues = issueHandler.getAllIssues();
 
-
 			ThresholdViolations thresholdViolations =
 					ScanResultParser.getReachedThreshold(new Thresholds(severities), issueHandler.getScanResult());
 
@@ -136,7 +134,8 @@ public class RipsScanMojo extends AbstractMojo {
 		}
 	}
 
-	private Api getApi(String url, String email, String password) throws MalformedURLException, ApiException, FailedLoginException {
+	private Api getApi(String url, String email, String password)
+			throws MalformedURLException, ApiException, FailedLoginException {
 
 		if (null == EndpointValidator.api(url)) {
 			throw new MalformedURLException("Invalid api endpoint");
