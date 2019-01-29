@@ -18,27 +18,17 @@ You can add and configure the plugin in your pom.xml:
 				<email>test@company</email>
 				<password>yourPassword</password>
 				<applicationId>yourApplicationId</applicationId>
-				<profileId>yourProfileId</profileId>
-				<version>yourScanVersion</version>
+				<version>{isoDateTime}</version>
 				<thresholds>
 					<low>10</low>
 					<medium>5</medium>
 					<high>0</high>
 					<critical>0</critical>
 				</thresholds>
-				<analysisDepth>5</analysisDepth>
-				<scanTimeout>5</scanTimeout>
 				<printIssues>true</printIssues>
 			</configuration>
 		</plugin>
-		<executions>
-			<execution>
-				<goals>
-					<goal>scan</goal>
-				</goals>
-            </execution>
-		</executions>
-	</plugins>
+    </plugins>
 </build>
 ```
 
