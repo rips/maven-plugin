@@ -27,6 +27,13 @@ You can add and configure the plugin in your pom.xml:
 				</thresholds>
 				<printIssues>true</printIssues>
 			</configuration>
+			<executions>
+                <execution>
+                    <goals>
+                        <goal>scan</goal>
+                    </goals>
+                </execution>
+            </executions>
 		</plugin>
 	</plugins>
 </build>
