@@ -1,4 +1,4 @@
-# RIPS Maven Plugin
+# Maven
 
 Apache Maven is a popular build management tool for Java applications. RIPS security analysis can be easily added as a build task in order to fail your build whenever new security vulnerabilities are added.
 
@@ -38,14 +38,14 @@ You can add and configure the plugin in your pom.xml:
 				<scanTimeout>5</scanTimeout>
 				<printIssues>true</printIssues>
 			</configuration>
+			<executions>
+				<execution>
+					<goals>
+						<goal>scan</goal>
+					</goals>
+					</execution>
+			</executions>
 		</plugin>
-		<executions>
-			<execution>
-				<goals>
-					<goal>scan</goal>
-				</goals>
-				</execution>
-		</executions>
 	</plugins>
 </build>
 ```
@@ -70,11 +70,11 @@ You can change this using the ```<executions>``` tag. For instance if you want t
 
 ```XML
 <executions>
-    <execution>
-        <phase>deploy</phase>
-        <goals>
-            <goal>scan</goal>
-        </goals>
-    </execution>
+  <execution>
+    <phase>deploy</phase>
+    <goals>
+      <goal>scan</goal>
+    </goals>
+  </execution>
 </executions>
 ```
