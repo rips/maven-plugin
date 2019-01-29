@@ -1,4 +1,4 @@
-# Maven
+# RIPS Maven Plugin
 
 Apache Maven is a popular build management tool for Java applications. RIPS security analysis can be easily integrated as a build task in order to fail your build whenever new security vulnerabilities are discovered.
 
