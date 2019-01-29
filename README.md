@@ -28,7 +28,7 @@ You can add and configure the plugin in your pom.xml:
 				<printIssues>true</printIssues>
 			</configuration>
 		</plugin>
-    </plugins>
+	</plugins>
 </build>
 ```
 
