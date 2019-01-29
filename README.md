@@ -36,7 +36,7 @@ You can add and configure the plugin in your pom.xml:
 				<goals>
 					<goal>scan</goal>
 				</goals>
-				</execution>
+            </execution>
 		</executions>
 	</plugins>
 </build>
