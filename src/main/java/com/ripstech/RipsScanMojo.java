@@ -1,14 +1,19 @@
 package com.ripstech;
 
+import com.ripstech.api.connector.Api;
+import com.ripstech.api.connector.exception.ApiException;
 import com.ripstech.api.entity.receive.application.scan.Issue;
-import com.ripstech.api.utils.*;
-import com.ripstech.api.utils.file.FileExtensions;
-import com.ripstech.api.utils.validation.ApiEndpointValidator;
+import com.ripstech.api.utils.ApiUtils;
+import com.ripstech.api.utils.constant.RipsDefault;
+import com.ripstech.api.utils.constant.Severity;
+import com.ripstech.api.utils.issue.IssueHandler;
+import com.ripstech.api.utils.scan.ScanHandler;
+import com.ripstech.api.utils.scan.result.ScanResultParser;
+import com.ripstech.api.utils.scan.result.ThresholdViolations;
+import com.ripstech.api.utils.scan.result.Thresholds;
 import com.ripstech.api.utils.validation.ApiVersion;
-import com.ripstech.apiconnector2.Api;
-import com.ripstech.apiconnector2.exception.ApiException;
-
-import com.ripstech.apiconnector2.service.application.ScanService;
+import com.ripstech.api.utils.validation.EndpointValidator;
+import com.ripstech.api.utils.version.ScanVersionPattern;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
@@ -21,164 +26,144 @@ import org.apache.maven.project.MavenProject;
 import javax.security.auth.login.FailedLoginException;
 import java.io.IOException;
 import java.net.MalformedURLException;
-import java.net.URL;
 import java.nio.file.Paths;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-import java.util.HashMap;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeUnit;
+import java.util.TreeMap;
 import java.util.concurrent.TimeoutException;
+import java.util.stream.Collectors;
 
-@Mojo(name = "scan",
-        defaultPhase = LifecyclePhase.VERIFY,
-        inheritByDefault = false)
+@Mojo(name = "scan", defaultPhase = LifecyclePhase.VERIFY, inheritByDefault = false)
 public class RipsScanMojo extends AbstractMojo {
 
-  private Log logger;
+	@Parameter(defaultValue = "${project}", readonly = true)
+	private MavenProject project;
 
-  @Parameter(defaultValue = "${project}", readonly = true)
-  private MavenProject project;
+	@Parameter(property = "rips.apiUrl", required = true)
+	private String apiUrl;
 
-  @Parameter(property = "rips.apiUrl", required = true)
-  private String apiUrl;
+	@Parameter(property = "rips.uiUrl")
+	private String uiUrl;
 
-  @Parameter(property = "rips.uiUrl")
-  private String uiUrl;
+	@Parameter(property = "rips.email", required = true)
+	private String email;
 
-  @Parameter(property = "rips.email", required = true)
-  private String email;
+	@Parameter(property = "rips.password", required = true)
+	private String password;
 
-  @Parameter(property = "rips.password", required = true)
-  private String password;
+	@Parameter(property = "rips.applicationId", required = true)
+	private int applicationId;
 
-  @Parameter(property = "rips.applicationId", required = true)
-  private int applicationId;
+	@Parameter(property = "rips.profileId")
+	private long profileId;
 
-  @Parameter(property = "rips.profileId", defaultValue = "1")
-  private long profileId;
+	@Parameter(property = "rips.version", defaultValue = RipsDefault.VERSION_PATTERN)
+	private String version;
 
-  @Parameter(property = "rips.version")
-  private String version;
+	@Parameter(property = "rips.thresholds")
+	private Map<String, Integer> thresholds;
 
-  @Parameter(property = "rips.thresholds")
-  private Map<String, Integer> thresholds = new HashMap<>();
+	@Parameter(property = "rips.analysisDepth", defaultValue = "5")
+	private int analysisDepth;
 
-  @Parameter(property = "rips.analysisDepth", defaultValue = "5")
-  private int analysisDepth;
+	@Parameter(property = "rips.scanTimeout", defaultValue = "5")
+	private int scanTimeout;
 
-  @Parameter(property = "rips.scanTimeout", defaultValue = "5")
-  private int scanTimeout;
+	@Parameter(property = "rips.printIssues", defaultValue = "true")
+	private boolean printIssues;
 
-  @Parameter(property = "rips.printIssues", defaultValue = "true")
-  private boolean printIssues;
+	private static final String SCAN_SOURCE = "ci-build-maven";
 
-  @Override
-  public void execute() throws MojoExecutionException, MojoFailureException {
+	@Override
+	public void execute() throws MojoExecutionException, MojoFailureException {
 
-    // Ignore sub modules
-    if(!project.isExecutionRoot()) {
-      return;
-    }
+		// Ignore sub modules
+		if (!project.isExecutionRoot()) {
+			return;
+		}
 
-    // Get Logger
-    logger = getLog();
-    ResultLogger resultLogger = new ResultLogger(logger);
-    Api api;
+		// Filter invalid thresholds and create new map with severities
+		Map<Severity, Integer> severities =
+				thresholds.entrySet().stream()
+						.filter(entry ->
+								        Arrays.stream(Severity.values())
+										        .anyMatch(severity -> entry.getKey()
+												                              .toUpperCase()
+												                              .equals(severity.toString())))
+						.collect(Collectors.toMap(entry -> Severity.valueOf(entry.getKey().toUpperCase()),
+						                          Map.Entry::getValue));
 
-    try {
-      api = getApi(apiUrl, email, password);
+		// Get Logger
+		final Log logger = getLog();
+		ResultLogger resultLogger = new ResultLogger(logger);
+		Api api;
 
-      RipsFileFilter ripsFileFilter = new RipsFileFilter(
-              FileExtensions.getFileExtensionsByAppId(api, applicationId));
-      Archiver archiver = new Archiver(ripsFileFilter);
-      zipSources(archiver);
+		try {
+			api = getApi(apiUrl, email, password);
 
-      long uploadId = ApiUtils.uploadFile(api, archiver.getArchive(), applicationId);
-      logger.info("Upload ID: " + uploadId);
+			ScanHandler scanHandler = new ScanHandler(api, applicationId, uiUrl);
 
-      if(null == version) {
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
-        version = LocalDateTime.now().format(formatter);
-      }
+			scanHandler.uploadFile(Paths.get("."), SCAN_SOURCE);
+			long scanId = scanHandler.setLogger(logger::info)
+					              .startScan(resolveScanVersion(version),
+					                         config -> config.setSource(SCAN_SOURCE)
+							                                   .setProfile(profileId)
+							                                   .setAnalysisDepth(analysisDepth))
+					              .getId();
 
-      // Start scan
-      long scanId = ApiUtils.startScan(api, applicationId, profileId, uploadId, version);
-      logger.info("Scan ID: " + scanId);
+			IssueHandler issueHandler = scanHandler.getIssueHandler();
+			issueHandler.setTimeoutInMinutes(scanTimeout * 60);
+			issueHandler.setPollIntervalInSeconds(5);
+			List<Issue> issues = issueHandler.getAllIssues();
 
-      archiver.removeZipFile();
+			ThresholdViolations thresholdViolations =
+					ScanResultParser.getReachedThreshold(new Thresholds(severities), issueHandler.getScanResult());
 
-      // Wait for results
-      ScanService scanService = api.application(applicationId).scans();
-      List<Issue> issues = ApiUtils.getScanIssues(scanService, api.application(applicationId).scan(scanId).issues(), scanId, logger::info)
-              .get(5, TimeUnit.HOURS);
+			resultLogger.printNumberOfIssues(issues.size(), issueHandler.getScanResult().getAmoutOfNewIssues());
 
-      // Evaluate results
-      Map<String, Integer> totalIssues = ScanResultParser.getTotalIssues(api, applicationId, scanId);
-      Map<String, Integer> newIssues = ScanResultParser.getNewIssues(api, applicationId, scanId);
+			if (printIssues) {
+				Map<Long, String> issueFiles = ScanResultParser.getFilesFromIssues(api, applicationId, scanId);
+				Map<Long, String> issueTypeNames = ApiUtils.getIssueTypeNames(api);
 
-      resultLogger.printNumberOfIssues(totalIssues, newIssues);
+				resultLogger.printIssues(issueFiles, issueTypeNames, issues, uiUrl, applicationId, scanId);
+			}
+			resultLogger.printThresholdStats(thresholdViolations);
+		} catch (TimeoutException | FailedLoginException | IOException | ApiException e) {
+			throw new MojoExecutionException(e.getMessage());
+		}
+	}
 
-      if(printIssues) {
-        Map<Long, String> issueFiles = ScanResultParser.getFilesFromIssues(api, applicationId, scanId);
-        Map<Long, String> issueTypeNames = ApiUtils.getIssueTypeNames(api);
+	private Api getApi(String url, String email, String password)
+			throws MalformedURLException, ApiException, FailedLoginException {
 
-        resultLogger.printIssues(issueFiles, issueTypeNames, issues);
-      }
+		if (null == EndpointValidator.api(url)) {
+			throw new MalformedURLException("Invalid api endpoint");
+		}
 
-      Map<Severity, Integer> reachedThresholds = ScanResultParser
-                                                         .getReachedThreshold(api, applicationId,
-                                                                              scanId, new Thresholds(thresholds));
+		if (!EndpointValidator.url(url)) {
+			throw new MalformedURLException("Invalid api apiUrl");
+		}
 
-      if(ApiEndpointValidator.validateUrl(uiUrl)) {
-        resultLogger.printThresholdStats(reachedThresholds, uiUrl, applicationId, scanId);
-      }
-      else {
-        resultLogger.printThresholdStats(reachedThresholds);
-      }
+		if (!EndpointValidator.apiLogin(apiUrl, email, password)) {
+			throw new FailedLoginException("Login is not correct.");
+		}
 
-    } catch (ApiException | ExecutionException | InterruptedException | TimeoutException | FailedLoginException | IOException e) {
-      throw new MojoExecutionException(e.getMessage());
-    }
+		Api api = ApiUtils.getApiWithFallback(apiUrl, email, password);
+		if (!EndpointValidator.compatibleWithApiVersion(api, ApiVersion.parse("3.0.0"))) {
+			throw new ApiException("Api version is not supported by plugin");
+		}
 
+		return api;
+	}
 
-  }
-
-  private Api getApi(String url, String email, String password) throws MalformedURLException, ApiException, FailedLoginException {
-
-    if(null == ApiEndpointValidator.validateApiEndpoint(url)) {
-      throw new MalformedURLException("Invalid api endpoint");
-    }
-
-    if(!ApiEndpointValidator.validateUrl(url)) {
-      throw new MalformedURLException("Invalid api apiUrl");
-    }
-
-    if(!ApiEndpointValidator.validateApiLogin(apiUrl, email, password)) {
-      throw new FailedLoginException("Login is not correct.");
-    }
-
-    Api api =  new Api.Builder(new URL(url).toString())
-            .withXPassword(email, password)
-            .build();
-    if(!ApiEndpointValidator.compatibleWithApiVersion(api, ApiVersion.version("3.0.0"))) {
-      throw new ApiException("Api version is not supported by plugin");
-    }
-
-    return api;
-  }
-
-  private void zipSources(Archiver archiver) throws MojoExecutionException, ApiException {
-    logger.debug("Collecting source Files.");
-    try {
-      archiver.createZip(Paths.get("."));
-    } catch (IOException e) {
-      throw new MojoExecutionException("Error while trying to zip source directory", e);
-    }
-    logger.debug("Created zip");
-
-  }
+	private String resolveScanVersion(String scanVersion) {
+		return new ScanVersionPattern("Maven",
+		                              null,
+		                              project.getName(),
+		                              null,
+		                              null,
+		                              null)
+				       .replace(scanVersion);
+	}
 }
-

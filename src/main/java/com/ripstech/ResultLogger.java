@@ -1,7 +1,7 @@
 package com.ripstech;
 
 import com.ripstech.api.entity.receive.application.scan.Issue;
-import com.ripstech.api.utils.Severity;
+import com.ripstech.api.utils.scan.result.ThresholdViolations;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugin.logging.Log;
 
@@ -17,70 +17,41 @@ class ResultLogger {
 		this.logger = logger;
 	}
 
-	void printNumberOfIssues(Map<String, Integer> totalIssues, Map<String, Integer> newIssues) {
-		logger.info( String.format("%d issues have been found. %d are new issues.",
-		                           totalIssues.values()
-				                           .stream()
-				                           .mapToInt(i -> i)
-				                           .sum(),
-		                           newIssues.values()
-				                           .stream()
-				                           .mapToInt(i -> i)
-				                           .sum()));
+	void printNumberOfIssues(int totalIssues, int newIssues) {
+		logger.warn(String.format("%d issues have been found. %d are new issues.", totalIssues, newIssues));
 	}
 
-	void printIssues(Map<Long, String> issueFiles, Map<Long, String> issueTypeNames, List<Issue> issues) {
+	void printIssues(Map<Long, String> issueFiles, Map<Long, String> issueTypeNames, List<Issue> issues, String uiUrl,
+	                 long appId, long scanId) {
 
-		for(Issue issue : issues) {
-			Path issueFile = null;
-			Integer startLine = null;
-			if(null != issue.getSource()) {
-				issueFile = Paths.get(issueFiles.get(issue.getSource().getFile().getId())).toAbsolutePath();
-				startLine = issue.getSource().getStartLine();
-			} else if (null != issue.getSink()) {
-				issueFile = Paths.get(issueFiles.get(issue.getSink().getFile().getId())).toAbsolutePath();
-				startLine = issue.getSink().getStartLine();
+		for (Issue issue : issues) {
+			if (null != issue.getSink()) {
+				Path issueFile = Paths.get(issueFiles.get(issue.getSink().getFile().getId())).toAbsolutePath();
+				Integer startLine = issue.getSink().getStartLine();
+				Integer startColumn = issue.getSink().getStartColumn();
 
+				logger.warn(""); // TODO: Why is this empty? Is it for a new line?
+				logger.warn(String.format("%s:", issueTypeNames.get(issue.getType().getId())));
+
+				logger.warn(String.format("%s:[%d,%d]", issueFile, startLine, startColumn));
+				logger.warn(String.format("More information: %s/issue/%d/%d/%d/%d/details",
+				                          uiUrl, appId, scanId, issue.getType().getId(), issue.getId()));
 			}
-			if(null != issue.getSink()) {
-				logger.info("");
-				logger.info(String.format("%s:", issueTypeNames.get(issue.getType().getId())));
-			}
-			logger.info(String.format("%s:%d",
-			                          issueFile,
-			                          startLine));
 		}
+
 		logger.info("");
 	}
 
-	void printThresholdStats(Map<Severity, Integer> reachedThresholds, String uiUrl, long applicationId, long scanId) throws MojoFailureException {
-		if (!reachedThresholds.isEmpty()) {
+	void printThresholdStats(ThresholdViolations thresholdViolations) throws MojoFailureException {
+		if (thresholdViolations.isFailed()) {
 			logger.info("The following thresholds have been exceeded:");
-			reachedThresholds.forEach((key, value) ->
-					                          logger.info(
-					                          		String.format("Severity: %s, Number of Issues: %d",
-						                                          key, value)));
-
-
-			logger.info("Detailed view: " + uiUrl + "/scan/" + applicationId + "/" + scanId);
-			throw new MojoFailureException("Thresholds have been exceeded.");
-
-		}
-		logger.info("Detailed view: " + uiUrl + "/scan/" + applicationId + "/" + scanId);
-	}
-
-	void printThresholdStats(Map<Severity, Integer> reachedThresholds) throws MojoFailureException {
-		if (!reachedThresholds.isEmpty()) {
-			logger.error("The following thresholds have been exceeded:");
-			reachedThresholds.forEach((key, value) ->
-					                          logger.error(
-							                          String.format("Severity: %s, Number of Issues: %d",
-							                                        key, value)));
+			thresholdViolations
+					.getEntries()
+					.forEach((key, value) -> logger.warn(String.format(
+							"Severity: %s, Number of Issues: %d", key, value.getIssues())));
 
 
 			throw new MojoFailureException("Thresholds have been exceeded.");
 		}
-
 	}
-
 }
