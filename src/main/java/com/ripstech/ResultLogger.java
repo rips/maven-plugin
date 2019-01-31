@@ -19,7 +19,12 @@ class ResultLogger {
 	}
 
 	void printNumberOfIssues(int totalIssues, int newIssues) {
-		logger.warn(String.format("%d issues have been found. %d are new issues.", totalIssues, newIssues));
+		String message = String.format("%d issues have been found. %d are new issues.", totalIssues, newIssues);
+		if (totalIssues == 0) {
+			logger.info(message);
+		} else {
+			logger.warn(message);
+		}
 	}
 
 	void printIssues(Map<Long, String> issueFiles, Map<Long, String> issueTypeNames, List<Issue> issues,
@@ -47,7 +52,7 @@ class ResultLogger {
 
 	void printThresholdStats(ThresholdViolations thresholdViolations) throws MojoFailureException {
 		if (thresholdViolations.isFailed()) {
-			logger.info("The following thresholds have been exceeded:");
+			logger.warn("The following thresholds have been exceeded:");
 			thresholdViolations
 					.getEntries()
 					.forEach((key, value) -> logger.warn(String.format(
@@ -56,5 +61,7 @@ class ResultLogger {
 
 			throw new MojoFailureException("Thresholds have been exceeded.");
 		}
+
+		logger.info("No thresholds were exceeded.");
 	}
 }
