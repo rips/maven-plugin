@@ -4,6 +4,7 @@ import com.ripstech.api.entity.receive.application.scan.Issue;
 import com.ripstech.api.utils.scan.result.ThresholdViolations;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugin.logging.Log;
+import org.jetbrains.annotations.Nullable;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -21,8 +22,8 @@ class ResultLogger {
 		logger.warn(String.format("%d issues have been found. %d are new issues.", totalIssues, newIssues));
 	}
 
-	void printIssues(Map<Long, String> issueFiles, Map<Long, String> issueTypeNames, List<Issue> issues, String uiUrl,
-	                 long appId, long scanId) {
+	void printIssues(Map<Long, String> issueFiles, Map<Long, String> issueTypeNames, List<Issue> issues,
+	                 @Nullable String uiUrl, long appId, long scanId) {
 
 		for (Issue issue : issues) {
 			if (null != issue.getSink()) {
@@ -34,8 +35,10 @@ class ResultLogger {
 				logger.warn(String.format("%s:", issueTypeNames.get(issue.getType().getId())));
 
 				logger.warn(String.format("%s:[%d,%d]", issueFile, startLine, startColumn));
-				logger.warn(String.format("More information: %s/issue/%d/%d/%d/%d/details",
-				                          uiUrl, appId, scanId, issue.getType().getId(), issue.getId()));
+				if (null != uiUrl) {
+					logger.warn(String.format("More information: %s/issue/%d/%d/%d/%d/details",
+					                          uiUrl, appId, scanId, issue.getType().getId(), issue.getId()));
+				}
 			}
 		}
 
