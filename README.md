@@ -18,26 +18,23 @@ You can add and configure the plugin in your pom.xml:
 				<email>test@company</email>
 				<password>yourPassword</password>
 				<applicationId>yourApplicationId</applicationId>
-				<profileId>yourProfileId</profileId>
-				<version>yourScanVersion</version>
+				<scanVersion>{isoDateTime}</scanVersion>
 				<thresholds>
 					<low>10</low>
 					<medium>5</medium>
 					<high>0</high>
 					<critical>0</critical>
 				</thresholds>
-				<analysisDepth>5</analysisDepth>
-				<scanTimeout>5</scanTimeout>
 				<printIssues>true</printIssues>
 			</configuration>
+			<executions>
+                <execution>
+                    <goals>
+                        <goal>scan</goal>
+                    </goals>
+                </execution>
+            </executions>
 		</plugin>
-		<executions>
-			<execution>
-				<goals>
-					<goal>scan</goal>
-				</goals>
-				</execution>
-		</executions>
 	</plugins>
 </build>
 ```
@@ -58,7 +55,7 @@ mvn install:install-file -Dfile=<path-to-jar> -DgroupId=com.ripstech \
 - rips.password(required): Your RIPS Api password.
 - rips.applicationId(required): The id of the RIPS application to use.
 - rips.profileId(optional): The RIPS analysis profile.
-- rips.version(optional): The version name of the scan. 
+- rips.scanVersion(optional): The version name of the scan. 
 - rips.thresholds(optional): Map of tolerated numbers of issues by severity. Possible severities: critical, high, medium, low. (E.g. critical: 0, high: 0, medium: 5, low: 10) 
 - rips.analysisDepth(optional): Overwrite default analysis depth(5).
 - rips.scanTimeout(optional): Overwrite default scan timeout (5) in hours.

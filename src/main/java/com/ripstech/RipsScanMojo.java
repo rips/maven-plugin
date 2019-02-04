@@ -30,7 +30,6 @@ import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
-import java.util.TreeMap;
 import java.util.concurrent.TimeoutException;
 import java.util.stream.Collectors;
 
@@ -58,8 +57,8 @@ public class RipsScanMojo extends AbstractMojo {
 	@Parameter(property = "rips.profileId")
 	private long profileId;
 
-	@Parameter(property = "rips.version", defaultValue = RipsDefault.VERSION_PATTERN)
-	private String version;
+	@Parameter(property = "rips.scanVersion", defaultValue = RipsDefault.VERSION_PATTERN)
+	private String scanVersion;
 
 	@Parameter(property = "rips.thresholds")
 	private Map<String, Integer> thresholds;
@@ -106,7 +105,7 @@ public class RipsScanMojo extends AbstractMojo {
 
 			scanHandler.uploadFile(Paths.get("."), SCAN_SOURCE);
 			long scanId = scanHandler.setLogger(logger::info)
-					              .startScan(resolveScanVersion(version),
+					              .startScan(resolveScanVersion(scanVersion),
 					                         config -> config.setSource(SCAN_SOURCE)
 							                                   .setProfile(profileId)
 							                                   .setAnalysisDepth(analysisDepth))
