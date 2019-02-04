@@ -14,6 +14,7 @@
         <maven.compiler.target>1.8</maven.compiler.target>
         <errorprone.version>2.3.1</errorprone.version>
         <javac.version>9+181-r4173-1</javac.version>
+        <projectVersion>1.0.0</projectVersion>
     </properties>
     <dependencies>
         <dependency>
@@ -34,12 +35,12 @@
         <dependency>
             <groupId>com.ripstech.api</groupId>
             <artifactId>connector</artifactId>
-            <version>3.0.0-20190124.151238-6</version>
+            <version>3.1.1</version>
         </dependency>
         <dependency>
             <groupId>com.ripstech.api</groupId>
             <artifactId>utils</artifactId>
-            <version>3.0.0-20190124.151249-6</version>
+            <version>3.1.1</version>
         </dependency>
         <dependency>
             <groupId>org.jetbrains</groupId>
@@ -83,6 +84,23 @@
                         </path>
                     </annotationProcessorPaths>
                 </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-shade-plugin</artifactId>
+                <version>3.2.1</version>
+                <configuration>
+                    <createDependencyReducedPom>false</createDependencyReducedPom>
+                </configuration>
+
+                <executions>
+                    <execution>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>shade</goal>
+                        </goals>
+                    </execution>
+                </executions>
             </plugin>
         </plugins>
     </build>
