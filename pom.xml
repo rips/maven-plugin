@@ -7,7 +7,7 @@
     <groupId>com.ripstech.maven</groupId>
     <artifactId>rips-maven-plugin</artifactId>
     <version>${projectVersion}</version>
-    <packaging>jar</packaging>
+    <packaging>maven-plugin</packaging>
     <properties>
         <projectVersionMain>1.0.0</projectVersionMain>
         <maven.compiler.source>1.8</maven.compiler.source>
@@ -35,12 +35,12 @@
         <dependency>
             <groupId>com.ripstech.api</groupId>
             <artifactId>connector</artifactId>
-            <version>3.0.0-20190124.151238-6</version>
+            <version>3.1.1</version>
         </dependency>
         <dependency>
             <groupId>com.ripstech.api</groupId>
             <artifactId>utils</artifactId>
-            <version>3.0.0-20190124.151249-6</version>
+            <version>3.1.1</version>
         </dependency>
         <dependency>
             <groupId>org.jetbrains</groupId>
