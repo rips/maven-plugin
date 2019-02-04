@@ -1,0 +1,8 @@
+**/.~lock.*.csv*
+**/target/
+**/*.iml
+**/.idea/
+**/.gradle/
+**/LanguageUtils/src/main/resources/
+.attach_pid*
+.directory
