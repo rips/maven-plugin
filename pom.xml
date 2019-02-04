@@ -7,13 +7,14 @@
     <groupId>com.ripstech.maven</groupId>
     <artifactId>rips-maven-plugin</artifactId>
     <version>${projectVersion}</version>
-    <packaging>maven-plugin</packaging>
+    <packaging>jar</packaging>
     <properties>
         <projectVersionMain>1.0.0</projectVersionMain>
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
         <errorprone.version>2.3.1</errorprone.version>
         <javac.version>9+181-r4173-1</javac.version>
+        <projectVersion>1.0.0</projectVersion>
     </properties>
     <dependencies>
         <dependency>
