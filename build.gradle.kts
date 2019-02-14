@@ -52,7 +52,7 @@ publishing {
                 licenses {
                     license {
                         name.set("BSD-3-Clause")
-                        url.set("https://github.com/rips/java-connector/blob/master/LICENSE")
+                        url.set("https://github.com/rips/maven-plugin/blob/master/LICENSE")
                         distribution.set("repo")
                     }
                 }
@@ -60,7 +60,7 @@ publishing {
                 developers {
                     developer {
                         name.set("Amin Dada")
-                        email.set("mebert@ripstech.com")
+                        email.set("adada@ripstech.com")
                         organization.set("RIPS Technologies GmbH")
                         organizationUrl.set("https://ripstech.com")
                     }
