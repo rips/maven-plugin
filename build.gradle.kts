@@ -22,6 +22,12 @@ java {
     targetCompatibility = JavaVersion.VERSION_1_8
 }
 
+tasks.withType<Sign>().configureEach {
+    onlyIf {
+        gradle.taskGraph.hasTask("publishToSonatype")
+    }
+}
+
 val sourcesJar by tasks.registering(Jar::class) {
     archiveClassifier.set("sources")
     from(sourceSets.main.get().allSource)
