@@ -28,7 +28,7 @@ java {
 
 tasks.withType<Sign>().configureEach {
     onlyIf {
-        gradle.taskGraph.hasTask("publishToSonatype")
+        gradle.taskGraph.hasTask(":publishToSonatype")
     }
 }
 
