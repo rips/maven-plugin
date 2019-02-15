@@ -8,6 +8,10 @@ plugins {
 group = "com.ripstech.maven"
 version = "1.0.0"
 
+repositories {
+    mavenCentral()
+}
+
 dependencies {
     implementation("org.apache.maven.plugin-tools:maven-plugin-annotations:3.5.2")
     implementation("org.apache.maven:maven-plugin-api:3.5.0")
