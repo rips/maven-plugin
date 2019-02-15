@@ -44,8 +44,7 @@ val javadocJar by tasks.registering(Jar::class) {
 
 publishing {
     publications {
-        create<MavenPublication>("rips-maven-plugin") {
-            from(components["java"])
+        getByName<MavenPublication>("mavenJava") {
             artifact(sourcesJar.get())
             artifact(javadocJar.get())
             pom {
